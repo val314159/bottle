@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import unittest
-import tools
+from . import tools
+
+from bottle import HTTPResponse, HTTPError, json_dumps
 
 
 class MyPlugin(object):
@@ -150,6 +152,16 @@ class TestPluginManagement(tools.ServerTestBase):
         self.assertBody('plugin;global-1', '/a')
         self.assertBody('plugin', '/b')
 
+    def test_json_plugin_catches_httpresponse(self):
+        @self.app.get('/return')
+        def _():
+            return HTTPResponse({'test': 'ko'}, 402)
+        @self.app.get('/raise')
+        def _():
+            raise HTTPResponse({'test': 'ko2'}, 402)
+
+        self.assertBody(json_dumps({'test': 'ko'}), '/return')
+        self.assertBody(json_dumps({'test': 'ko2'}), '/raise')
 
 
 class TestPluginAPI(tools.ServerTestBase):

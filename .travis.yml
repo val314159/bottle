@@ -1,32 +1,27 @@
+group: travis_latest
 language: python
 sudo: required
 
 python:
   - "2.7.3" # Ubuntu 12.4LTS (precise) and Debian 7 LTS (wheezy)
   - "2.7"
-  - "3.2"
-  - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
   - "nightly"
-  - "pypy"
-  - "pypy3"
+
+jobs:
+  include:
+  - python: "3.7"
+    dist: xenial  # https://github.com/travis-ci/travis-ci/issues/9069
 
 install:
   - travis_retry bash test/travis_setup.sh
-  # Coveralls 4.0 doesn't support Python 3.2
-  - if [ "$TRAVIS_PYTHON_VERSION" == "3.2" ]; then travis_retry pip install coverage==3.7.1; fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "3.2" ]; then travis_retry pip install coverage; fi
-  - pip install coveralls
 
 script:
- - coverage run --source=bottle.py test/testall.py
- - coverage combine
- - coverage report 2>&1
-
-notifications:
-  irc: "irc.freenode.org#bottlepy"
-  on_success: "never"
+  - python -m coverage run -m unittest discover
+  - python -m coverage combine
+  - python -m coverage report 2>&1
 
 after_success:
   coveralls
